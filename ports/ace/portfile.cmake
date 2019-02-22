@@ -9,9 +9,9 @@ endif()
 include(vcpkg_common_functions)
 set(SOURCE_PATH ${CURRENT_BUILDTREES_DIR}/src/ACE_wrappers/ace)
 vcpkg_download_distfile(ARCHIVE
-    URLS "http://download.dre.vanderbilt.edu/previous_versions/ACE-6.5.1.zip"
-    FILENAME "ACE-6.5.1.zip"
-    SHA512 b6444b183a356f4a9fc4af57ccc239a400121fbb00547ff9d13c51f0fc20f38b0aa87b9568531472e5f7fde82deea3d4c3d91d7504aca89799a2505ba492c73a
+    URLS "https://github.com/DOCGroup/ACE_TAO/releases/download/ACE%2BTAO-6_5_4/ACE-6.5.4.zip"
+    FILENAME ACE-6.5.4.zip
+    SHA512 d18248f1fcea0e4993d5ba9c62ff99883d4eaecfb0b6b88062961723c0f30ac423c9f550ada98042cd7913d2586feb2f8d47b5779403017afaa89a622613d1ae
 )
 vcpkg_extract_source_archive(${ARCHIVE})
 
