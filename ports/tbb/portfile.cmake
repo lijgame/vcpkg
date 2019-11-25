@@ -1,20 +1,17 @@
 include(vcpkg_common_functions)
 
-if(NOT VCPKG_CMAKE_SYSTEM_NAME OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-    vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY)
-endif()
-
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO 01org/tbb
-    REF 2019_U5
-    SHA512 227b12e3864fbb922ddbc99700bf94d7d8897d62e2056bf3beb608efacf3ca785dd416b94ad65b421b6c9fc11caff688147b5fbe400c51e98678cee5dc04f274
+    REPO intel/tbb
+    REF 4bdba61bafc6ba2d636f31564f1de5702d365cf7
+    SHA512 0b00c9deefdac5dc1f4fbae314e91eb3513b54b47ff6dec08ed2460486fc7d211ab36d6130e5787bfd50523cb613c65f03f9217d967292ca9056e2d3f5010bf8
     HEAD_REF tbb_2019
+    PATCHES fix-static-build.patch
 )
 
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt DESTINATION ${SOURCE_PATH})
 
-if(VCPKG_CMAKE_SYSTEM_NAME AND NOT VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
+if (NOT VCPKG_TARGET_IS_WINDOWS)
     vcpkg_configure_cmake(
         SOURCE_PATH ${SOURCE_PATH}
         PREFER_NINJA
@@ -33,6 +30,32 @@ else()
         set(RELEASE_CONFIGURATION Release)
         set(DEBUG_CONFIGURATION Debug)
     endif()
+    
+    macro(CONFIGURE_PROJ_FILE arg)
+        set(CONFIGURE_FILE_NAME ${arg})
+        set(CONFIGURE_BAK_FILE_NAME ${arg}.bak)
+        if (NOT EXISTS ${CONFIGURE_BAK_FILE_NAME})
+            configure_file(${CONFIGURE_FILE_NAME} ${CONFIGURE_BAK_FILE_NAME} COPYONLY)
+        endif()
+        configure_file(${CONFIGURE_BAK_FILE_NAME} ${CONFIGURE_FILE_NAME} COPYONLY)
+        if (VCPKG_LIBRARY_LINKAGE STREQUAL static)
+            file(READ ${CONFIGURE_FILE_NAME} SLN_CONFIGURE)
+            string(REPLACE "<ConfigurationType>DynamicLibrary<\/ConfigurationType>"
+                        "<ConfigurationType>StaticLibrary<\/ConfigurationType>" SLN_CONFIGURE "${SLN_CONFIGURE}")
+            string(REPLACE "\/D_CRT_SECURE_NO_DEPRECATE"
+                        "\/D_CRT_SECURE_NO_DEPRECATE \/DIN_CILK_STATIC" SLN_CONFIGURE "${SLN_CONFIGURE}")
+            file(WRITE ${CONFIGURE_FILE_NAME} "${SLN_CONFIGURE}")
+        else()
+            file(READ ${CONFIGURE_FILE_NAME} SLN_CONFIGURE)
+            string(REPLACE "\/D_CRT_SECURE_NO_DEPRECATE"
+                        "\/D_CRT_SECURE_NO_DEPRECATE \/DIN_CILK_RUNTIME" SLN_CONFIGURE "${SLN_CONFIGURE}")
+            file(WRITE ${CONFIGURE_FILE_NAME} "${SLN_CONFIGURE}")
+        endif()
+    endmacro()
+    
+    CONFIGURE_PROJ_FILE(${SOURCE_PATH}/build/vs2013/tbb.vcxproj)
+    CONFIGURE_PROJ_FILE(${SOURCE_PATH}/build/vs2013/tbbmalloc.vcxproj)
+    CONFIGURE_PROJ_FILE(${SOURCE_PATH}/build/vs2013/tbbmalloc_proxy.vcxproj)
 
     vcpkg_install_msbuild(
         SOURCE_PATH ${SOURCE_PATH}
@@ -78,14 +101,14 @@ string(REPLACE
     "${_contents}"
 )
 string(REPLACE
-    "set(_tbb_release_lib \"/${TBB_LIB_PREFIX}\${_tbb_component}.${TBB_LIB_EXT}\")"
-    "set(_tbb_release_lib \"\${_tbb_root}/lib/${TBB_LIB_PREFIX}\${_tbb_component}.${TBB_LIB_EXT}\")"
+    "set(_tbb_release_lib \"/${TBB_LIB_PREFIX}"
+    "set(_tbb_release_lib \"\${_tbb_root}/lib/${TBB_LIB_PREFIX}"
     _contents
     "${_contents}"
 )
 string(REPLACE
-    "set(_tbb_debug_lib \"/${TBB_LIB_PREFIX}\${_tbb_component}_debug.${TBB_LIB_EXT}\")"
-    "set(_tbb_debug_lib \"\${_tbb_root}/debug/lib/${TBB_LIB_PREFIX}\${_tbb_component}_debug.${TBB_LIB_EXT}\")"
+    "set(_tbb_debug_lib \"/${TBB_LIB_PREFIX}"
+    "set(_tbb_debug_lib \"\${_tbb_root}/debug/lib/${TBB_LIB_PREFIX}"
     _contents
     "${_contents}"
 )
