@@ -1,0 +1,1 @@
+vcpkg export eigen3 rapidxml glfw3 glm xerces-c gflags libpng flann tbb tiff libjpeg-turbo libgeotiff boost glew qt5 suitesparse[metis] glog rapidxml  openmesh  tinyxml2 opencv3[nonfree,cuda,eigen,tbb] cgal gtest log4cplus freeimage gumbo ceres[suitesparse] --zip
