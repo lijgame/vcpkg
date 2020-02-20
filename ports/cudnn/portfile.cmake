@@ -11,8 +11,8 @@ endif()
 vcpkg_check_linkage(ONLY_DYNAMIC_LIBRARY ONLY_DYNAMIC_CRT)
 
 #note: this port must be kept in sync with CUDA port: every time one is upgraded, the other must be too
-set(CUDNN_VERSION "7.6.0")
-set(CUDNN_FULL_VERSION "${CUDNN_VERSION}-cuda10.1_0")
+set(CUDNN_VERSION "7.6.5")
+set(CUDNN_FULL_VERSION "${CUDNN_VERSION}-cuda10.2_0")
 
 if(VCPKG_TARGET_IS_WINDOWS)
   set(CUDNN_DOWNLOAD_LINK "https://anaconda.org/anaconda/cudnn/${CUDNN_VERSION}/download/win-64/cudnn-${CUDNN_FULL_VERSION}.tar.bz2")
