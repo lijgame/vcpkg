@@ -20,7 +20,7 @@ if (NVCC)
 endif()
 
 #note: this port must be kept in sync with CUDNN port: every time one is upgraded, the other must be too
-set(CUDA_REQUIRED_VERSION "V10.1.0")
+set(CUDA_REQUIRED_VERSION "V10.2.89")
 
 if (error_code)
     message(FATAL_ERROR "Could not find CUDA. Before continuing, please download and install CUDA (${CUDA_REQUIRED_VERSION} or higher) from:"
