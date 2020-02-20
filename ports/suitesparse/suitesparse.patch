@@ -1,82 +1,40 @@
+From 5db372cf5a0a1597f3b0feb81f1b199da4cfed50 Mon Sep 17 00:00:00 2001
+From: Jack Li <Jack.li@autodesk.com>
+Date: Thu, 20 Feb 2020 12:10:28 +0800
+Subject: [PATCH] suitesparse.patch
+
+---
+ CMakeLists.txt                             | 8 ++++----
+ SuiteSparse/CHOLMOD/Include/cholmod_blas.h | 1 +
+ SuiteSparse/CMakeLists.txt                 | 6 +++---
+ cmake/SuiteSparse-config-install.cmake.in  | 6 +++++-
+ 4 files changed, 13 insertions(+), 8 deletions(-)
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3486f05..b8c2e63 100644
+index 8d905b7..3b3f436 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -191,68 +191,14 @@ if(WITH_CUDA)
- 	ENDIF(${CUDA_FOUND})
+@@ -228,8 +228,8 @@ if (LAPACK_FOUND AND TARGET blas AND TARGET lapack)
+   set(SuiteSparse_LAPACK_used_CONFIG YES)
+ else()
+   # missing config file or targets, try BLAS and LAPACK
+-  find_package(BLAS)
+-  find_package(LAPACK)
++  find_package(BLAS REQUIRED)
++  find_package(LAPACK REQUIRED)
+   if (BLAS_FOUND AND LAPACK_FOUND)
+     message(STATUS "found lapack and blas config file. Linking targets lapack and blas")
+     message(STATUS "- LAPACK_LIBRARIES: ${LAPACK_LIBRARIES}")
+@@ -242,7 +242,7 @@ else()
+   endif()
  endif()
- 
--find_package(BLAS)
--find_package(LAPACK)
--if (LAPACK_FOUND AND BLAS_FOUND)
-+find_package(BLAS REQUIRED)
-+find_package(LAPACK REQUIRED)
-+if(LAPACK_FOUND AND BLAS_FOUND)
- 	message(STATUS "found lapack and blas config file. Linking targets lapack and blas")
- 	set(SuiteSparse_LINKER_LAPACK_BLAS_LIBS ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
--else () # LAPACK is not found
--
--## Need to use SuiteSparse_LINKER_LAPACK_BLAS_LIBS in our subproject in case of SHARED flag is set to ON
--SET(SUITESPARSE_USE_CUSTOM_BLAS_LAPACK_LIBS OFF CACHE BOOL "Check if you have custom LAPACK/BLAS libraries (AMD,...)")
--IF (SUITESPARSE_USE_CUSTOM_BLAS_LAPACK_LIBS)
--	SET(SUITESPARSE_CUSTOM_BLAS_LIB "" CACHE FILE "Path to custom library file for BLAS")
--	SET(SUITESPARSE_CUSTOM_LAPACK_LIB "" CACHE FILE "Path to custom library file for LAPACK")
--	IF (NOT EXISTS "${SUITESPARSE_CUSTOM_BLAS_LIB}" OR NOT EXISTS "${SUITESPARSE_CUSTOM_LAPACK_LIB}")
--		MESSAGE("*Error*: Correctly set SUITESPARSE_CUSTOM_BLAS_LIB and SUITESPARSE_CUSTOM_LAPACK_LIB or uncheck SUITESPARSE_USE_CUSTOM_BLAS_LAPACK_LIBS")
--	ELSE()
--		SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS ${SUITESPARSE_CUSTOM_BLAS_LIB} ${SUITESPARSE_CUSTOM_LAPACK_LIB})
--	ENDIF()
--ELSE()
--	IF (UNIX)
--		SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS lapack blas rt)
--	ELSE()
--		IF(CMAKE_SIZEOF_VOID_P EQUAL 8)  # Size in bytes!
--			set(PATH_WORD_SIZE "x64")
--		ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)  # Size in bytes!
--			set(PATH_WORD_SIZE "x32")
--		ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
--
--		add_library(blas SHARED IMPORTED)
--		set_property(TARGET blas PROPERTY IMPORTED_LOCATION ${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/libblas.dll)
--		set_property(TARGET blas PROPERTY IMPORTED_IMPLIB 	${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/libblas.lib)
--
--		add_library(lapack SHARED IMPORTED)
--		set_property(TARGET lapack PROPERTY IMPORTED_LOCATION 	${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/liblapack.dll)
--		set_property(TARGET lapack PROPERTY IMPORTED_IMPLIB 	${SuiteSparseProject_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/liblapack.lib)
--
--		SET(SuiteSparse_LINKER_LAPACK_BLAS_LIBS blas lapack)
--
--		## install lapack and blas dependencies
--		file(GLOB lapack_blas_windows_libs 	"${CMAKE_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/*.lib")
--		file(GLOB lapack_blas_windows_dll 	"${CMAKE_SOURCE_DIR}/lapack_windows/${PATH_WORD_SIZE}/*.dll")
--		if(lapack_blas_windows_dll AND lapack_blas_windows_libs)
--			set(SuiteSparse_LAPACK_BLAS_LIB_DIR "lib${LIB_POSTFIX}/lapack_blas_windows")
--			install(FILES 		${lapack_blas_windows_libs}
--								${lapack_blas_windows_dll}
--					DESTINATION ${SuiteSparse_LAPACK_BLAS_LIB_DIR}
--			)
--		endif()
--	ENDIF()
--ENDIF()
--ENDIF() # LAPACK found
--
--if(SuiteSparse_LAPACK_BLAS_LIB_DIR) # "Export" the imported targets in config.cmake manually
--	set(ExternConfig "add_library(blas SHARED IMPORTED)
--	set_property(TARGET blas PROPERTY IMPORTED_LOCATION \${_SuiteSparse_PREFIX}/${SuiteSparse_LAPACK_BLAS_LIB_DIR}/libblas.dll)
--	set_property(TARGET blas PROPERTY IMPORTED_IMPLIB 	\${_SuiteSparse_PREFIX}/${SuiteSparse_LAPACK_BLAS_LIB_DIR}/libblas.lib)
--
--	add_library(lapack SHARED IMPORTED)
--	set_property(TARGET lapack PROPERTY IMPORTED_LOCATION 	\${_SuiteSparse_PREFIX}/${SuiteSparse_LAPACK_BLAS_LIB_DIR}/liblapack.dll)
--	set_property(TARGET lapack PROPERTY IMPORTED_IMPLIB 	\${_SuiteSparse_PREFIX}/${SuiteSparse_LAPACK_BLAS_LIB_DIR}/liblapack.lib)")
--endif()
-+endif() # LAPACK is not found
  
 -IF(BUILD_METIS)
 +IF(BUILD_METIS OR USE_VCPKG_METIS)
  	set(SuiteSparse_LINKER_METIS_LIBS "metis")
  	## namespaced library target for config
  	set(SuiteSparse_EXPORTED_METIS_LIBS "SuiteSparse::metis")
-@@ -311,7 +257,7 @@ configure_file(cmake/SuiteSparse-config-install.cmake.in
+@@ -301,7 +301,7 @@ configure_file(cmake/SuiteSparse-config-install.cmake.in
  ## do the EXPORT for allowing other project to easily use suitesparse with cmake
  install(EXPORT SuiteSparseTargets
  	FILE
@@ -117,18 +75,11 @@ index c6e2834..5ef08a6 100644
  # Disable COMPLEX numbers: disable it by default, since it causes problems in some platforms.
  SET(HAVE_COMPLEX OFF CACHE BOOL "Enables building SuiteSparse with complex numbers (disabled by default to avoid problems in some platforms)")
 diff --git a/cmake/SuiteSparse-config-install.cmake.in b/cmake/SuiteSparse-config-install.cmake.in
-index cb1f51f..49387b8 100644
+index 1e587d1..4e59b1f 100644
 --- a/cmake/SuiteSparse-config-install.cmake.in
 +++ b/cmake/SuiteSparse-config-install.cmake.in
-@@ -4,13 +4,10 @@ get_filename_component(_SuiteSparse_PREFIX "${_SuiteSparse_SELF_DIR}" PATH)
- get_filename_component(_SuiteSparse_PREFIX "${_SuiteSparse_PREFIX}" PATH)
- get_filename_component(_SuiteSparse_PREFIX "${_SuiteSparse_PREFIX}" PATH)
- 
--find_package(LAPACK CONFIG)
--if (NOT LAPACK_FOUND) # Load the LAPACK package with which we were built.
--	@ExternConfig@
--endif ()
-+find_package(LAPACK REQUIRED)
+@@ -15,7 +15,7 @@ else()
+ endif ()
  
  # Load targets from the install tree.
 -include(${_SuiteSparse_SELF_DIR}/SuiteSparse-targets.cmake)
@@ -136,7 +87,7 @@ index cb1f51f..49387b8 100644
  
  # Report SuiteSparse header search locations.
  set(SuiteSparse_INCLUDE_DIRS ${_SuiteSparse_PREFIX}/include)
-@@ -31,6 +28,11 @@ set(SuiteSparse_LIBRARIES
+@@ -36,6 +36,10 @@ set(SuiteSparse_LIBRARIES
  	SuiteSparse::spqr
  	@SuiteSparse_EXPORTED_METIS_LIBS@
  )
@@ -147,4 +98,7 @@ index cb1f51f..49387b8 100644
 +
 +set(SUITESPARSE_FOUND TRUE)
 +set(SuiteSparse_FOUND TRUE)
-+
+\ No newline at end of file
+-- 
+2.21.0.windows.1
+

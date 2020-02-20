@@ -1,9 +1,20 @@
+From fa93a324126823478eb7426cf486f20fba8132e8 Mon Sep 17 00:00:00 2001
+From: Jack Li <Jack.li@autodesk.com>
+Date: Thu, 20 Feb 2020 12:18:28 +0800
+Subject: [PATCH] add-find-package-metis
+
+---
+ CMakeLists.txt                            | 5 ++++-
+ SuiteSparse/CMakeLists.txt                | 2 +-
+ cmake/SuiteSparse-config-install.cmake.in | 1 +
+ 3 files changed, 6 insertions(+), 2 deletions(-)
+
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b8c2e63..d443390 100644
+index 3b3f436..9e2a72c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -199,12 +199,15 @@ if(LAPACK_FOUND AND BLAS_FOUND)
- endif() # LAPACK is not found
+@@ -243,12 +243,15 @@ else()
+ endif()
  
  IF(BUILD_METIS OR USE_VCPKG_METIS)
 +	find_package(metis REQUIRED)
@@ -33,14 +44,17 @@ index 5ef08a6..6c7abfd 100644
  	ADD_DEFINITIONS(-DNPARTITION)
  ENDIF ()
 diff --git a/cmake/SuiteSparse-config-install.cmake.in b/cmake/SuiteSparse-config-install.cmake.in
-index 49387b8..553d9c7 100644
+index 4e59b1f..68794d2 100644
 --- a/cmake/SuiteSparse-config-install.cmake.in
 +++ b/cmake/SuiteSparse-config-install.cmake.in
-@@ -5,6 +5,7 @@ get_filename_component(_SuiteSparse_PREFIX "${_SuiteSparse_PREFIX}" PATH)
- get_filename_component(_SuiteSparse_PREFIX "${_SuiteSparse_PREFIX}" PATH)
+@@ -14,6 +14,7 @@ else()
+   find_dependency(LAPACK)
+ endif ()
  
- find_package(LAPACK REQUIRED)
 +@SuiteSparse_FIND_PACKAGE_METIS@
- 
  # Load targets from the install tree.
  include(${_SuiteSparse_SELF_DIR}/suitesparse-targets.cmake)
+ 
+-- 
+2.21.0.windows.1
+

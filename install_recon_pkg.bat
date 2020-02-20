@@ -1,1 +1,2 @@
-vcpkg install eigen3 rapidxml glfw3 glm xerces-c gflags libpng flann tbb tiff libjpeg-turbo libgeotiff boost glew qt5 suitesparse[metis] glog  openmesh  tinyxml2 opencv3[nonfree,cuda,eigen,tbb] cgal gtest log4cplus freeimage gumbo ceres[suitesparse] --recurse 
+rem vcpkg install eigen3 rapidxml glfw3 glm xerces-c gflags glew gtest libpng flann tbb tiff libjpeg-turbo libgeotiff boost log4cplus freeimage gumbo qt5 glog tinyxml2 suitesparse[metis,cuda] ceres[suitesparse] opencv3[nonfree,cuda,eigen,tbb] --recurse 
+vcpkg install suitesparse[metis,cuda] ceres[suitesparse] opencv3[nonfree,cuda,eigen,tbb] --recurse 

@@ -1,0 +1,101 @@
+From b88aaec77a3982c57c449bef6d8d507349552e94 Mon Sep 17 00:00:00 2001
+From: Jack Li <Jack.li@autodesk.com>
+Date: Thu, 20 Feb 2020 14:20:48 +0800
+Subject: [PATCH] fix cuda errors
+
+---
+ SuiteSparse/CHOLMOD/GPU/t_cholmod_gpu.c           | 15 ++++++++-------
+ .../Include/GPUQREngine_BucketList.hpp            |  2 +-
+ .../GPUQREngine/Include/GPUQREngine_Front.hpp     |  2 +-
+ .../GPUQREngine/Include/GPUQREngine_LLBundle.hpp  |  2 +-
+ .../GPUQREngine/Include/GPUQREngine_Scheduler.hpp |  2 +-
+ 5 files changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/SuiteSparse/CHOLMOD/GPU/t_cholmod_gpu.c b/SuiteSparse/CHOLMOD/GPU/t_cholmod_gpu.c
+index 39a4298..08ba10c 100644
+--- a/SuiteSparse/CHOLMOD/GPU/t_cholmod_gpu.c
++++ b/SuiteSparse/CHOLMOD/GPU/t_cholmod_gpu.c
+@@ -29,6 +29,7 @@
+ #define L_ENTRY 2
+ #endif
+ 
++typedef int (*__compar_fn_t) (const void*, const void*);
+ 
+ /* ========================================================================== */
+ /* === gpu_clear_memory ===================================================== */
+@@ -116,13 +117,13 @@ int TEMPLATE2 (CHOLMOD (gpu_init))
+ 
+     /* divvy up the memory in dev_mempool */
+     gpu_p->d_Lx[0] = Common->dev_mempool;
+-    gpu_p->d_Lx[1] = Common->dev_mempool + Common->devBuffSize;
+-    gpu_p->d_C = Common->dev_mempool + 2*Common->devBuffSize;
+-    gpu_p->d_A[0] = Common->dev_mempool + 3*Common->devBuffSize;
+-    gpu_p->d_A[1] = Common->dev_mempool + 4*Common->devBuffSize;
+-    gpu_p->d_Ls = Common->dev_mempool + 5*Common->devBuffSize;
+-    gpu_p->d_Map = gpu_p->d_Ls + (nls+1)*sizeof(Int) ;
+-    gpu_p->d_RelativeMap = gpu_p->d_Map + (n+1)*sizeof(Int) ;
++    gpu_p->d_Lx[1] = (double*)Common->dev_mempool + Common->devBuffSize;
++    gpu_p->d_C = (double*)Common->dev_mempool + 2*Common->devBuffSize;
++    gpu_p->d_A[0] = (double*)Common->dev_mempool + 3*Common->devBuffSize;
++    gpu_p->d_A[1] = (double*)Common->dev_mempool + 4*Common->devBuffSize;
++    gpu_p->d_Ls = (double*)Common->dev_mempool + 5*Common->devBuffSize;
++    gpu_p->d_Map = (double*)gpu_p->d_Ls + (nls+1)*sizeof(Int) ;
++    gpu_p->d_RelativeMap = (double*)gpu_p->d_Map + (n+1)*sizeof(Int) ;
+ 
+     /* Copy all of the Ls and Lpi data to the device.  If any supernodes are
+      * to be computed on the device then this will be needed, so might as
+diff --git a/SuiteSparse/GPUQREngine/Include/GPUQREngine_BucketList.hpp b/SuiteSparse/GPUQREngine/Include/GPUQREngine_BucketList.hpp
+index f37e3ec..6f141a9 100644
+--- a/SuiteSparse/GPUQREngine/Include/GPUQREngine_BucketList.hpp
++++ b/SuiteSparse/GPUQREngine/Include/GPUQREngine_BucketList.hpp
+@@ -62,7 +62,7 @@ public:
+     int VThead;              // Index of the first available entry in VTlist
+ 
+     // Constructors
+-    void *operator new(long unsigned int, BucketList* p)
++    void *operator new(size_t, BucketList* p)
+     {
+         return p;
+     }
+diff --git a/SuiteSparse/GPUQREngine/Include/GPUQREngine_Front.hpp b/SuiteSparse/GPUQREngine/Include/GPUQREngine_Front.hpp
+index 02d4208..8517b2c 100644
+--- a/SuiteSparse/GPUQREngine/Include/GPUQREngine_Front.hpp
++++ b/SuiteSparse/GPUQREngine/Include/GPUQREngine_Front.hpp
+@@ -47,7 +47,7 @@ public:
+     /* Debug Fields */
+     bool printMe;
+ 
+-    void* operator new(long unsigned int reqMem, Front* ptr){ return ptr; }
++    void* operator new(size_t reqMem, Front* ptr){ return ptr; }
+ 
+     Front(
+         Int fids_arg,                   // the front identifier
+diff --git a/SuiteSparse/GPUQREngine/Include/GPUQREngine_LLBundle.hpp b/SuiteSparse/GPUQREngine/Include/GPUQREngine_LLBundle.hpp
+index 93bd321..fc34714 100644
+--- a/SuiteSparse/GPUQREngine/Include/GPUQREngine_LLBundle.hpp
++++ b/SuiteSparse/GPUQREngine/Include/GPUQREngine_LLBundle.hpp
+@@ -68,7 +68,7 @@ public:
+ 
+     TaskType CurrentTask;
+ 
+-    void *operator new(long unsigned int, LLBundle* p){ return p; }
++    void *operator new(size_t, LLBundle* p){ return p; }
+     LLBundle(BucketList *buckets, Int panelSize, Int nativeBucket);
+ 
+     // empty LLBundle constructor (currently used, kept for possible future use
+diff --git a/SuiteSparse/GPUQREngine/Include/GPUQREngine_Scheduler.hpp b/SuiteSparse/GPUQREngine/Include/GPUQREngine_Scheduler.hpp
+index aa3781d..069b01a 100644
+--- a/SuiteSparse/GPUQREngine/Include/GPUQREngine_Scheduler.hpp
++++ b/SuiteSparse/GPUQREngine/Include/GPUQREngine_Scheduler.hpp
+@@ -90,7 +90,7 @@ public:
+     cudaStream_t memoryStreamD2H;
+ 
+     /* Scheduler.cpp */
+-    void *operator new(long unsigned int, Scheduler* p){ return p; }
++    void *operator new(size_t, Scheduler* p){ return p; }
+     Scheduler(Front *fronts, Int numFronts, size_t gpuMemorySize);
+     ~Scheduler();
+ 
+-- 
+2.21.0.windows.1
+
