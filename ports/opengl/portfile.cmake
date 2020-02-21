@@ -1,7 +1,7 @@
 include(vcpkg_common_functions)
 
 if(NOT VCPKG_CMAKE_SYSTEM_NAME OR VCPKG_CMAKE_SYSTEM_NAME STREQUAL "WindowsStore")
-    # vcpkg_get_program_files_32_bit(PROGRAM_FILES_32_BIT)
+    vcpkg_get_program_files_32_bit(PROGRAM_FILES_32_BIT)
     vcpkg_get_windows_sdk(WINDOWS_SDK)
 
     if (WINDOWS_SDK MATCHES "10.")
