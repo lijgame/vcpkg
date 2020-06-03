@@ -79,6 +79,21 @@ namespace vcpkg
         option_field->emplace_back(std::move(new_value));
     }
 
+    static void parse_cojoined_multivalue(std::string new_value,
+                                          const std::string& option_name,
+                                          std::vector<std::string>& option_field)
+    {
+        if (new_value.empty())
+        {
+            System::print2(System::Color::error, "Error: expected value after ", option_name, '\n');
+            Metrics::g_metrics.lock()->track_property("error", "error option name");
+            Help::print_usage();
+            Checks::exit_fail(VCPKG_LINE_INFO);
+        }
+
+        option_field.emplace_back(std::move(new_value));
+    }
+
     VcpkgCmdArguments VcpkgCmdArguments::create_from_command_line(const int argc,
                                                                   const CommandLineCharType* const* const argv)
     {
@@ -152,6 +167,12 @@ namespace vcpkg
                         arg.substr(sizeof("--x-scripts-root=") - 1), "--x-scripts-root", args.scripts_root_dir);
                     continue;
                 }
+                if (Strings::starts_with(arg, "--x-install-root="))
+                {
+                    parse_cojoined_value(
+                        arg.substr(sizeof("--x-install-root=") - 1), "--x-install-root=", args.install_root_dir);
+                    continue;
+                }
                 if (arg == "--triplet")
                 {
                     ++arg_begin;
@@ -170,6 +191,12 @@ namespace vcpkg
                         arg.substr(sizeof("--overlay-triplets=") - 1), "--overlay-triplets", args.overlay_triplets);
                     continue;
                 }
+                if (Strings::starts_with(arg, "--x-binarysource="))
+                {
+                    parse_cojoined_multivalue(
+                        arg.substr(sizeof("--x-binarysource=") - 1), "--x-binarysource", args.binarysources);
+                    continue;
+                }
                 if (arg == "--debug")
                 {
                     parse_switch(true, "debug", args.debug);
@@ -185,6 +212,11 @@ namespace vcpkg
                     parse_switch(true, "printmetrics", args.printmetrics);
                     continue;
                 }
+                if (arg == "--disable-metrics")
+                {
+                    parse_switch(true, "printmetrics", args.disable_metrics);
+                    continue;
+                }
                 if (arg == "--no-sendmetrics")
                 {
                     parse_switch(false, "sendmetrics", args.sendmetrics);
@@ -193,6 +225,11 @@ namespace vcpkg
                 if (arg == "--no-printmetrics")
                 {
                     parse_switch(false, "printmetrics", args.printmetrics);
+                    continue;
+                }
+                if (arg == "--no-disable-metrics")
+                {
+                    parse_switch(false, "printmetrics", args.disable_metrics);
                     continue;
                 }
                 if (arg == "--featurepackages")
