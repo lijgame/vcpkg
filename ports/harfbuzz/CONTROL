@@ -15,3 +15,6 @@ Description: icu support for harfbuzz
 Feature: glib
 Build-Depends: glib
 Description: Glib Unicode callbacks support
+
+Feature: ucdn
+Description: Builtin (UCDN) Unicode callbacks support
