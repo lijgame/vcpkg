@@ -5,12 +5,12 @@ function(vcpkg_find_cuda)
         message(FATAL_ERROR "vcpkg_find_cuda() requres an OUT_CUDA_TOOLKIT_ROOT argument")
     endif()
 
-    set(CUDA_REQUIRED_VERSION "10.1.0")
+    set(CUDA_REQUIRED_VERSION "11.1.0")
 
     set(CUDA_PATHS 
             ENV CUDA_PATH
             ENV CUDA_BIN_PATH
-            ENV CUDA_PATH_V11_0
+            ENV CUDA_PATH_V11_1
             ENV CUDA_PATH_V10_2
             ENV CUDA_PATH_V10_1)
 
