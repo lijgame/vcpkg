@@ -37,7 +37,9 @@ vcpkg_add_to_path(PREPEND "${GPERF_DIR}")
 vcpkg_add_to_path(PREPEND "${NINJA_DIR}")
 
 set(PATCHES common.pri.patch 
-            gl.patch)
+            gl.patch
+            build.patch
+            vs2017.patch)
 
 if(NOT VCPKG_TARGET_IS_WINDOWS)
     list(APPEND CORE_OPTIONS "BUILD_OPTIONS" "-webengine-system-libwebp" "-webengine-system-ffmpeg" "-webengine-system-icu")
