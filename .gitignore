@@ -312,6 +312,8 @@ __pycache__/
 !/triplets/community
 !/triplets/community/**
 
+!/triplets/recon.cmake
+
 *.exe
 *.zip
 
